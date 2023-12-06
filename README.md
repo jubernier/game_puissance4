@@ -1,4 +1,4 @@
-# game_puissance4
+# Game Puissance4
 
 
 
@@ -15,14 +15,14 @@ Already a pro? Just edit this README.md and make it your own. Want to make it ea
 
 ```
 cd existing_repo
-git remote add origin https://gitlab.univ-nantes.fr/E228120G/game_puissance4.git
+git remote add origin https://gitlab.univ-nantes.fr/E22C000R/game-puissance4.git
 git branch -M main
 git push -uf origin main
 ```
 
 ## Integrate with your tools
 
-- [ ] [Set up project integrations](https://gitlab.univ-nantes.fr/E228120G/game_puissance4/-/settings/integrations)
+- [ ] [Set up project integrations](https://gitlab.univ-nantes.fr/E22C000R/game-puissance4/-/settings/integrations)
 
 ## Collaborate with your team
 
