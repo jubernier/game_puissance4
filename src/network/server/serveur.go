@@ -6,7 +6,6 @@ import (
 	"log"
 	"net"
 	"network"
-	"strconv"
 	"sync"
 )
 
@@ -20,8 +19,8 @@ type Server struct {
 
 	countTokens     int        // Compteur utilisé plusieurs fois dans le programme
 	mutexCountRC    sync.Mutex // Mutex permettant de bloquer certaines parties du code
-	finishTimes     [4]string  // Tableau des temps
-	runnerPositions [4]int     // Tableau des runners sélectionnés
+	finishTimes     [2]string  // Tableau des temps
+	runnerPositions [2]int     // Tableau des runners sélectionnés
 }
 
 // newServer : Creating a new server with clients, listener, writeChans, readChans
@@ -34,12 +33,12 @@ func newServer() Server {
 		[]chan string{},
 		0,
 		sync.Mutex{},
-		[4]string{},
-		[4]int{0, 1, 2, 3},
+		[2]string{},
+		[2]int{0, 1},
 	}
 }
 
-// acceptClients : Accepte 4 connexions de clients
+// acceptClients : Accepte 2 connexions de clients
 func (s *Server) acceptClients() {
 	for i := 0; i < 2; i++ {
 		conn, err := s.listener.Accept() // Accepte la connection du client
@@ -98,7 +97,6 @@ func WriteFromNetWork(connWriter *bufio.Writer, channel chan string) {
 
 // comClient : Communication avec un client
 func (s *Server) comClient(clientID int) {
-	var stringClientID = fmt.Sprint(clientID)
 	var message string
 	for {
 		message = <-s.readChans[clientID] // On lit le message du channel du client
@@ -108,98 +106,34 @@ func (s *Server) comClient(clientID int) {
 		case network.CLIENT_CONNECTED:
 			log.Println("client ", clientID, "connecté")
 
-		case network.RUNNER_CHOICE_POSITION:
-			if message[1:2] == stringClientID { // Si l'identifiant du client reçu est celui du client géré par la goroutine
-				var direction = message[2:3]        // On récupère la direction vers laquelle le client effectuait sa sélection
-				pos, _ := strconv.Atoi(message[3:]) // On récupère la position du curseur de sélection
-				s.mutexCountRC.Lock()
-				for contains(&s.runnerPositions, pos) { // Tant que la position du curseur est sur un runner déjà sélectionné
-					log.Println("Position " + fmt.Sprint(pos) + " dejà pris par le client " + fmt.Sprint(findIndex(&s.runnerPositions, pos)))
-					if direction == "L" { // Si la sélection s'effectue par la gauche
-						pos = (pos + 7) % 8 // On calcule la position du curseur vers cette direction
-					}
-					if direction == "R" { // Si la sélection s'effectue par la droite
-						pos = (pos + 1) % 8 // On calcule la position du curseur vers cette direction
-					}
-				}
-				s.runnerPositions[clientID] = pos // On enregistre le nouveau runner sélectionné par ce client
-				s.mutexCountRC.Unlock()
-				s.sendToAll(network.RUNNER_CHOICE_POSITION + stringClientID + " " + fmt.Sprint(pos)) // On envoie à tous les clients le runner sélectionné pour clientID
-				log.Println(s.runnerPositions)
-			}
-
-		// Cas lorsqu'un client vient de sélectionner un joueur
-		case network.CLIENT_CHOOSE_RUNNER:
+		// Cas lorsqu'un client vient de sélectionner un jeton
+		case network.CLIENT_CHOOSE_TOKEN:
 			var selected = message[1:]
 			s.mutexCountRC.Lock() // On bloque la partie du code suivante
-			if selected == "0" {  // Le client a déselectionné son runner
+			if selected == "0" {  // Le client a déselectionné son jeton
 				s.countTokens--
 				log.Println("client", clientID, "has deselected his runner")
 			}
-			if selected == "1" { // Le client a sélectionné son runner
-				s.countTokens++ // On compte le nombre de joueurs ayant choisi leur personnage
+			if selected == "1" { // Le client a sélectionné son jeton
+				s.countTokens++ // On compte le nombre de joueurs ayant choisi leur jeton
 				log.Println("client", clientID, "chose his runner")
 			}
 			s.sendToAll(network.CLIENTS_IN_QUEUE + fmt.Sprint(s.countTokens)) // On envoie à tous les clients le nombre de joueurs ayant choisi leur personnage
-			if s.countTokens == 4 {                                           // Si les 4 joueurs ont choisi leur personnage
-				s.sendToAll(network.ALL_RUNNER_CHOOSEN) // On envoie à tous les clients que tout le monde a choisi son personnage
-				s.sendToAll(network.START_RACE)         // On envoie à tous les clients que la course commence
+			if s.countTokens == 2 {                                           // Si les 2 joueurs ont choisi leur personnage
+				s.sendToAll(network.ALL_TOKEN_CHOOSEN) // On envoie à tous les clients que tout le monde a choisi son personnage
+				s.sendToAll(network.START_RACE)        // On envoie à tous les clients que la course commence
 
 				s.countTokens = 0 // On réinitialise notre compteur
 			}
 			s.mutexCountRC.Unlock() // On débloque cette partie du code
-
-		// Cas lorsqu'un joueur a terminé sa course
-		case network.FINISH_RACE:
-			s.finishTimes[clientID] = message[1:] // On récupère le temps d'un joueur en récupérant le message reçu sans le premier caractère
-
-			var playersFinishedRace = 0
-			for _, time := range s.finishTimes { // On vérifie que tous les clients aient renvoyé leur temps
-				if time != "" { // Si le temps d'un joueur n'est pas vide
-					playersFinishedRace++ // On le compte comme ayant renvoyé son temps
-				}
-			}
-			if playersFinishedRace == 4 { // Si tous les joueurs ont renvoyé leur temps
-				var text = network.FINISH_RACE       // On initialise le texte
-				for _, time := range s.finishTimes { // Pour les temps de chaque joueur
-					text += time + " " // On ajoute ce temps à une chaine de caractères
-				}
-				s.sendToAll(text[:len(text)-1]) // On envoie cette chaine de caractères contenant tous les temps des joueurs et on l'envoie à tous les clients.
-			}
-
-		// Cas lorsqu'un joueur souhaite relancer une partie
-		case network.CLIENT_WISH_RESTART:
-			s.mutexCountRC.Lock()   // On bloque cette partie de code
-			s.countTokens++         // On compte les joueurs qui souhaitent relancer une partie
-			if s.countTokens == 4 { // Si 4 joueurs souhaitent relancer une partie
-				s.sendToAll(network.START_RACE) // On envoie à tous les clients qu'une nouvelle partie recommence.
-				s.sendToAll(network.START_RACE) // Deux fois, car avec un seul envoie certains clients ne relancent pas la partie (bug).
-				// Une fois la course relancée
-				s.countTokens = 0           // On réinitialise le compteur
-				s.finishTimes = [4]string{} // On réinitialise le tableau des temps
-				s.mutexCountRC.Unlock()     // On débloque la partie du code
-				break                       // On sort de la boucle for
-			}
-			// Si tous les joueurs n'ont pas souhaité relancer une partie
-			s.sendToAll(network.CLIENTS_IN_QUEUE + fmt.Sprint(s.countTokens)) // On envoie à tous les clients le nombre de clients souhaitant relancer une partie
-			s.mutexCountRC.Unlock()                                           // On débloque le bloc de code
-		case network.NEED_CLIENT_COUNT:
-			s.writeChans[clientID] <- network.CLIENTS_IN_QUEUE + fmt.Sprint(s.countTokens)
-
-		case network.RUNNER_POSITION:
-			if message[1:2] == stringClientID {
-				log.Println("Position et vitesse du runner ", clientID, " : ", message[2:])
-				s.sendToAll(network.RUNNER_POSITION + stringClientID + fmt.Sprint(message[2:]))
-			}
 		}
-
 	}
 }
 
 func main() {
 	var server = newServer() // Création du serveur
 	log.Println("Listening for connections")
-	server.acceptClients() // Attend que les 4 clients soient connectés
+	server.acceptClients() // Attend que les 2 clients soient connectés
 	// Le programme ne passe pas à l'étape suivante (ligne suivante) tant que 4 clients ne se sont pas connectés
 	server.sendToAll(network.ALL_CONNECTED) // Envoie à tous les clients l'information que tous les clients sont connectés
 	log.Println("All clients connected")
@@ -211,22 +145,4 @@ func main() {
 
 	for {
 	} // Pour empêcher le serveur de s'éteindre
-}
-
-func contains(s *[4]int, e int) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
-
-func findIndex(s *[4]int, e int) int {
-	for i, a := range s {
-		if a == e {
-			return i
-		}
-	}
-	return -1
 }
