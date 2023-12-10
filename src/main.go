@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
@@ -41,7 +42,8 @@ func init() {
 func main() {
 
 	g := game{}
-
+	ip := os.Args
+	InitGame(ip[1], "8080")
 	ebiten.SetWindowTitle("Programmation système : projet puissance 4")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 

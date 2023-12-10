@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"network"
 	"sync"
+
+	"network"
 )
 
 // Server : Structure de données avec tout ce qu'il nous faut !
@@ -25,7 +26,7 @@ type Server struct {
 
 // newServer : Creating a new server with clients, listener, writeChans, readChans
 func newServer() Server {
-	listener, _ := net.Listen("tcp", ":8080")
+	listener, _ := net.Listen("localhost", ":8080")
 	return Server{
 		[]net.Conn{},
 		listener,
@@ -68,30 +69,6 @@ func (s *Server) acceptClients() {
 func (s *Server) sendToAll(message string) {
 	for _, chann := range s.writeChans { // Pour tous les channels d'écriture ouverts
 		chann <- message // On envoie le message dans ce canal
-	}
-}
-
-// ReadFromNetWork Fonction permettant de lire en boucle sur un reader
-func ReadFromNetWork(connReader *bufio.Reader, channel chan string) {
-	for {
-		msg, err := connReader.ReadString('\n')
-		log.Print(msg)
-		if err != nil {
-			log.Panic(err)
-		}
-		channel <- msg[:len(msg)-1] // Ajoute le message au channel en retirant le dernier caractère (delimiter)
-	}
-}
-
-func WriteFromNetWork(connWriter *bufio.Writer, channel chan string) {
-	var message string
-	for {
-		message = <-channel
-		_, err := connWriter.WriteString(message + "\n")
-		if err != nil {
-			log.Panic(err)
-		}
-		connWriter.Flush()
 	}
 }
 

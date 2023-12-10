@@ -1,5 +1,17 @@
 package main
 
+import (
+	"bufio"
+	"fmt"
+	"log"
+	"net"
+	"strconv"
+
+	"puissancequatre/network"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
+
 // Structure de données pour représenter l'état courant du jeu.
 type game struct {
 	gameState     int
@@ -10,6 +22,9 @@ type game struct {
 	turn          int
 	tokenPosition int
 	result        int
+	readChan      chan string
+	writeChan     chan string
+	clientId      int
 }
 
 // Constantes pour représenter la séquence de jeu actuelle (écran titre,
@@ -52,4 +67,32 @@ func (g *game) reset() {
 			g.grid[x][y] = noToken
 		}
 	}
+}
+
+func InitGame(ip, port string) (g game) {
+	// Open connection
+	log.Println(ip + ":" + port)
+	conn, err := net.Dial("tcp", ip+":"+port)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Initialisation du channel de communication
+	g.readChan = make(chan string, 1)
+	g.writeChan = make(chan string, 1)
+
+	// Goroutine écoutant permettant le lire en double sur un reader initialisé avec la connection
+	go network.server.ReadFromNetWork(bufio.NewReader(conn), g.readChan)
+	go network.server.WriteFromNetWork(bufio.NewWriter(conn), g.writeChan)
+
+	var message = <-g.readChan
+	if message[:1] == network.CLIENT_NUMBER {
+		var idFromServ, _ = strconv.Atoi(message[1:])
+		g.clientId = idFromServ
+		ebiten.SetWindowTitle("BUT2 année 2022-2023, R3.05 Programmation système, clientID: " + fmt.Sprint(g.clientId))
+	}
+
+	g.writeChan <- network.CLIENT_CONNECTED
+
+	return g
 }
