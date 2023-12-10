@@ -54,8 +54,8 @@ func (s *Server) acceptClients() {
 		s.readChans = append(s.readChans, make(chan string, 10))
 
 		// Initialiser les goroutines de communication de ce client avec la connection et le channel initialisé précédement
-		go ReadFromNetWork(bufio.NewReader(conn), s.readChans[i])
-		go WriteFromNetWork(bufio.NewWriter(conn), s.writeChans[i])
+		go network.ReadFromNetWork(bufio.NewReader(conn), s.readChans[i])
+		go network.WriteFromNetWork(bufio.NewWriter(conn), s.writeChans[i])
 
 		s.writeChans[i] <- network.CLIENT_NUMBER + fmt.Sprint(i) // Envoyer l'ID au client qui vient de se connecter
 		s.sendToAll(network.CLIENTS_IN_QUEUE + fmt.Sprint(i+1))  // Envoie à tout le monde le nombre de clients actuellement connectés
