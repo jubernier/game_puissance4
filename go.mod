@@ -5,8 +5,9 @@ go 1.21.3
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.6.2
 	golang.org/x/image v0.12.0
-	gitlab.univ-nantes.fr/E228120G/game_puissance4/-/tree/main/src/network v0.0.1
+	gitlab.univ-nantes.fr/E228120G/game_puissance4/src/network v0.0.0
 )
+
 
 require (
 	github.com/ebitengine/purego v0.5.0 // indirect
