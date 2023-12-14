@@ -7,8 +7,6 @@ import (
 	"net"
 	"strconv"
 
-	"puissancequatre/network"
-
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -82,17 +80,17 @@ func InitGame(ip, port string) (g game) {
 	g.writeChan = make(chan string, 1)
 
 	// Goroutine écoutant permettant le lire en double sur un reader initialisé avec la connection
-	go network.server.ReadFromNetWork(bufio.NewReader(conn), g.readChan)
-	go network.server.WriteFromNetWork(bufio.NewWriter(conn), g.writeChan)
+	go ReadFromNetWork(bufio.NewReader(conn), g.readChan)
+	go WriteFromNetWork(bufio.NewWriter(conn), g.writeChan)
 
 	var message = <-g.readChan
-	if message[:1] == network.CLIENT_NUMBER {
+	if message[:1] == CLIENT_NUMBER {
 		var idFromServ, _ = strconv.Atoi(message[1:])
 		g.clientId = idFromServ
 		ebiten.SetWindowTitle("BUT2 année 2022-2023, R3.05 Programmation système, clientID: " + fmt.Sprint(g.clientId))
 	}
 
-	g.writeChan <- network.CLIENT_CONNECTED
+	g.writeChan <- CLIENT_CONNECTED
 
 	return g
 }
