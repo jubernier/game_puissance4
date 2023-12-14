@@ -9,7 +9,7 @@ import (
 )
 
 // Affichage des graphismes à l'écran selon l'état actuel du jeu.
-func (g *game) Draw(screen *ebiten.Image) {
+func (g *Game) Draw(screen *ebiten.Image) {
 
 	screen.Fill(globalBackgroundColor)
 
@@ -27,7 +27,7 @@ func (g *game) Draw(screen *ebiten.Image) {
 }
 
 // Affichage des graphismes de l'écran titre.
-func (g game) titleDraw(screen *ebiten.Image) {
+func (g Game) titleDraw(screen *ebiten.Image) {
 	text.Draw(screen, "Puissance 4 en réseau", largeFont, 90, 150, globalTextColor)
 	text.Draw(screen, "Projet de programmation système", smallFont, 105, 190, globalTextColor)
 	text.Draw(screen, "Année 2023-2024", smallFont, 210, 230, globalTextColor)
@@ -38,7 +38,7 @@ func (g game) titleDraw(screen *ebiten.Image) {
 }
 
 // Affichage des graphismes de l'écran de sélection des couleurs des joueurs.
-func (g game) colorSelectDraw(screen *ebiten.Image) {
+func (g Game) colorSelectDraw(screen *ebiten.Image) {
 	text.Draw(screen, "Quelle couleur pour vos pions ?", smallFont, 110, 80, globalTextColor)
 
 	line := 0
@@ -63,14 +63,14 @@ func (g game) colorSelectDraw(screen *ebiten.Image) {
 }
 
 // Affichage des graphismes durant le jeu.
-func (g game) playDraw(screen *ebiten.Image) {
+func (g Game) playDraw(screen *ebiten.Image) {
 	g.drawGrid(screen)
 
 	vector.DrawFilledCircle(screen, float32(globalTileSize/2+g.tokenPosition*globalTileSize), float32(globalTileSize/2), globalTileSize/2-globalCircleMargin, globalTokenColors[g.p1Color], true)
 }
 
 // Affichage des graphismes à l'écran des résultats.
-func (g game) resultDraw(screen *ebiten.Image) {
+func (g Game) resultDraw(screen *ebiten.Image) {
 	g.drawGrid(offScreenImage)
 
 	options := &ebiten.DrawImageOptions{}
@@ -87,7 +87,7 @@ func (g game) resultDraw(screen *ebiten.Image) {
 }
 
 // Affichage de la grille de puissance 4, incluant les pions déjà joués.
-func (g game) drawGrid(screen *ebiten.Image) {
+func (g Game) drawGrid(screen *ebiten.Image) {
 	vector.DrawFilledRect(screen, 0, globalTileSize, globalTileSize*globalNumTilesX, globalTileSize*globalNumTilesY, globalGridColor, true)
 
 	for x := 0; x < globalNumTilesX; x++ {

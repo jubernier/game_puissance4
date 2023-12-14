@@ -8,7 +8,7 @@ import (
 )
 
 // Mise à jour de l'état du jeu en fonction des entrées au clavier.
-func (g *game) Update() error {
+func (g *Game) Update() error {
 
 	g.stateFrame++
 
@@ -48,13 +48,13 @@ func (g *game) Update() error {
 }
 
 // Mise à jour de l'état du jeu à l'écran titre.
-func (g *game) titleUpdate() bool {
+func (g *Game) titleUpdate() bool {
 	g.stateFrame = g.stateFrame % globalBlinkDuration
 	return inpututil.IsKeyJustPressed(ebiten.KeyEnter)
 }
 
 // Mise à jour de l'état du jeu lors de la sélection des couleurs.
-func (g *game) colorSelectUpdate() bool {
+func (g *Game) colorSelectUpdate() bool {
 
 	col := g.p1Color % globalNumColorCol
 	line := g.p1Color / globalNumColorLine
@@ -89,7 +89,7 @@ func (g *game) colorSelectUpdate() bool {
 }
 
 // Gestion de la position du prochain pion à jouer par le joueur 1.
-func (g *game) tokenPosUpdate() {
+func (g *Game) tokenPosUpdate() {
 	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
 		g.tokenPosition = (g.tokenPosition - 1 + globalNumTilesX) % globalNumTilesX
 	}
@@ -100,7 +100,7 @@ func (g *game) tokenPosUpdate() {
 }
 
 // Gestion du moment où le prochain pion est joué par le joueur 1.
-func (g *game) p1Update() (int, int) {
+func (g *Game) p1Update() (int, int) {
 	lastXPositionPlayed := -1
 	lastYPositionPlayed := -1
 	if inpututil.IsKeyJustPressed(ebiten.KeyDown) || inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
@@ -115,7 +115,7 @@ func (g *game) p1Update() (int, int) {
 
 // Gestion de la position du prochain pion joué par le joueur 2 et
 // du moment où ce pion est joué.
-func (g *game) p2Update() (int, int) {
+func (g *Game) p2Update() (int, int) {
 	position := rand.Intn(globalNumTilesX)
 	updated, yPos := g.updateGrid(p2Token, position)
 	for ; !updated; updated, yPos = g.updateGrid(p2Token, position) {
@@ -126,13 +126,13 @@ func (g *game) p2Update() (int, int) {
 }
 
 // Mise à jour de l'état du jeu à l'écran des résultats.
-func (g game) resultUpdate() bool {
+func (g Game) resultUpdate() bool {
 	return inpututil.IsKeyJustPressed(ebiten.KeyEnter)
 }
 
 // Mise à jour de la grille de jeu lorsqu'un pion est inséré dans la
 // colonne de coordonnée (x) position.
-func (g *game) updateGrid(token, position int) (updated bool, yPos int) {
+func (g *Game) updateGrid(token, position int) (updated bool, yPos int) {
 	for y := globalNumTilesY - 1; y >= 0; y-- {
 		if g.grid[position][y] == noToken {
 			updated = true
@@ -147,7 +147,7 @@ func (g *game) updateGrid(token, position int) (updated bool, yPos int) {
 // Vérification de la fin du jeu : est-ce que le dernier joueur qui
 // a placé un pion gagne ? est-ce que la grille est remplie sans gagnant
 // (égalité) ? ou est-ce que le jeu doit continuer ?
-func (g game) checkGameEnd(xPos, yPos int) (finished bool, result int) {
+func (g Game) checkGameEnd(xPos, yPos int) (finished bool, result int) {
 
 	tokenType := g.grid[xPos][yPos]
 
