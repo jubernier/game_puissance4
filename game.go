@@ -2,13 +2,10 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"net"
 	"network"
 	"strconv"
-
-	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // Structure de données pour représenter l'état courant du jeu.
@@ -88,10 +85,9 @@ func InitGame(ip, port string) (g Game) {
 	if message[:1] == network.CLIENT_NUMBER {
 		var idFromServ, _ = strconv.Atoi(message[1:])
 		g.clientId = idFromServ
-		ebiten.SetWindowTitle("BUT2 année 2022-2023, R3.05 Programmation système, clientID: " + fmt.Sprint(g.clientId))
+		log.Println("Identifiant du client : ", idFromServ)
 	}
 
 	g.writeChan <- network.CLIENT_CONNECTED
-
 	return g
 }

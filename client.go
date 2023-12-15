@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"bufio"
 	"fmt"
@@ -41,3 +42,4 @@ func handleServeur(ip, port string) string {
 func main() {
 	handleServeur("127.0.0.1", "8080")
 }
+*/

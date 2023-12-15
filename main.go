@@ -1,6 +1,12 @@
 package main
 
-/*
+import (
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
+	"golang.org/x/image/font/opentype"
+	"log"
+)
+
 // Mise en place des polices d'écritures utilisées pour l'affichage.
 func init() {
 	tt, err := opentype.Parse(fonts.MPlus1pRegular_ttf)
@@ -32,10 +38,8 @@ func init() {
 
 // Création, paramétrage et lancement du jeu.
 func main() {
-
-	g := Game{}
+	g := InitGame("localhost", "8080")
 	//ip := os.Args
-	InitGame("127.0.0.1", "8080")
 	ebiten.SetWindowTitle("Programmation système : projet puissance 4")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 
@@ -43,4 +47,3 @@ func main() {
 		log.Fatal(err)
 	}
 }
-*/
