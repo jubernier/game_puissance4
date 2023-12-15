@@ -25,7 +25,7 @@ type Server struct {
 
 // newServer : Creating a new server with clients, listener, writeChans, readChans
 func newServer() Server {
-	listener, _ := net.Listen("localhost", ":8080")
+	listener, _ := net.Listen("tcp", ":8080")
 	return Server{
 		[]net.Conn{},
 		listener,

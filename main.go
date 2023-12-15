@@ -1,12 +1,6 @@
 package main
 
-import (
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
-	"golang.org/x/image/font/opentype"
-	"log"
-)
-
+/*
 // Mise en place des polices d'écritures utilisées pour l'affichage.
 func init() {
 	tt, err := opentype.Parse(fonts.MPlus1pRegular_ttf)
@@ -49,3 +43,4 @@ func main() {
 		log.Fatal(err)
 	}
 }
+*/
