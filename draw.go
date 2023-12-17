@@ -65,8 +65,12 @@ func (g Game) colorSelectDraw(screen *ebiten.Image) {
 // Affichage des graphismes durant le jeu.
 func (g Game) playDraw(screen *ebiten.Image) {
 	g.drawGrid(screen)
+	if g.turn == p1Turn {
+		vector.DrawFilledCircle(screen, float32(globalTileSize/2+g.tokenPosition*globalTileSize), float32(globalTileSize/2), globalTileSize/2-globalCircleMargin, globalTokenColors[g.p1Color], true)
+	} else {
+		vector.DrawFilledCircle(screen, float32(globalTileSize/2+g.tokenPosition*globalTileSize), float32(globalTileSize/2), globalTileSize/2-globalCircleMargin, globalTokenColors[g.p2Color], true)
+	}
 
-	vector.DrawFilledCircle(screen, float32(globalTileSize/2+g.tokenPosition*globalTileSize), float32(globalTileSize/2), globalTileSize/2-globalCircleMargin, globalTokenColors[g.p1Color], true)
 }
 
 // Affichage des graphismes à l'écran des résultats.

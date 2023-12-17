@@ -10,17 +10,21 @@ import (
 
 // Structure de données pour représenter l'état courant du jeu.
 type Game struct {
-	gameState     int
-	stateFrame    int
-	grid          [globalNumTilesX][globalNumTilesY]int
-	p1Color       int
-	p2Color       int
-	turn          int
-	tokenPosition int
-	result        int
-	readChan      chan string
-	writeChan     chan string
-	clientId      int
+	gameState       int
+	stateFrame      int
+	grid            [globalNumTilesX][globalNumTilesY]int
+	p1Color         int
+	p2Color         int
+	turn            int
+	tokenPosition   int
+	result          int
+	readChan        chan string
+	writeChan       chan string
+	clientId        int
+	p1ChooseToken   bool
+	p2ChooseToken   bool
+	isReadyNextStep bool
+	isHost          bool
 }
 
 // Constantes pour représenter la séquence de jeu actuelle (écran titre,
@@ -88,6 +92,6 @@ func InitGame(ip, port string) (g Game) {
 		log.Println("Identifiant du client : ", idFromServ)
 	}
 
-	g.writeChan <- network.CLIENT_CONNECTED
+	//g.writeChan <- network.CLIENT_CONNECTED
 	return g
 }

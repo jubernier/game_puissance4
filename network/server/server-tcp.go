@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"network"
+	"strconv"
 	"sync"
 )
 
@@ -49,8 +50,8 @@ func (s *Server) acceptClients() {
 
 		// Créer les canaux de communication avec ce client
 		// Enregistre ces canaux dans un tableau répertoriant tous les canaux
-		s.writeChans = append(s.writeChans, make(chan string, 10))
-		s.readChans = append(s.readChans, make(chan string, 10))
+		s.writeChans = append(s.writeChans, make(chan string, 1))
+		s.readChans = append(s.readChans, make(chan string, 1))
 
 		// Initialiser les goroutines de communication de ce client avec la connection et le channel initialisé précédement
 		go network.ReadFromNetWork(bufio.NewReader(conn), s.readChans[i])
@@ -73,16 +74,37 @@ func (s *Server) sendToAll(message string) {
 
 // comClient : Communication avec un client
 func (s *Server) comClient(clientID int) {
+	//s.mutexCountRC.Lock()
+
 	var message string
 	for {
+
 		message = <-s.readChans[clientID] // On lit le message du channel du client
 		// On rappelle que cette fonction est lancée comme go routine et que le serveur lance cette fonction pour chaque client
 		switch message[:1] {
 		// Cas lorsqu'un client vient de se connecter
 		case network.CLIENT_CONNECTED:
 			log.Println("client ", clientID, "connecté")
+			/*
+				case network.TOKEN_CHOICE_POSITION:
+					println("La couleur est ", message[2], "pour le client numero", clientID)
+			*/
+		case network.CLIENT_CHOOSE_TOKEN:
+			log.Println("le client", clientID, "a choisis son personage", message[1])
+
+			s.writeChans[otherClient(clientID)] <- network.CLIENT_CHOOSE_TOKEN + strconv.Itoa(clientID) + string(message[1])
+			//log.Println(otherClient(clientID), "huytu", clientID)
+		case network.TOKEN_POSITION:
+			log.Println(message[1:])
+			s.writeChans[otherClient(clientID)] <- network.TOKEN_POSITION + message[1:]
+		case network.CLIENT_TOKEN_PLAY:
+			s.writeChans[otherClient(clientID)] <- network.CLIENT_TOKEN_PLAY + message[1:3]
+			/*
+				case network.TOKEN_CHOICE_POSITION:
+					s.writeChans[otherClient(clientID)] <- network.TOKEN_CHOICE_POSITION + message[1]*/
 		}
 	}
+	//defer s.mutexCountRC.Unlock()
 }
 
 func main() {
@@ -90,6 +112,7 @@ func main() {
 	log.Println("Listening for connections")
 	server.acceptClients() // Attend que les 2 clients soient connectés
 	// Le programme ne passe pas à l'étape suivante (ligne suivante) tant que 4 clients ne se sont pas connectés
+	server.writeChans[0] <- network.ISHOST
 	server.sendToAll(network.ALL_CONNECTED) // Envoie à tous les clients l'information que tous les clients sont connectés
 	log.Println("All clients connected")
 	defer server.listener.Close()         // Fermer la connection à la fin du programme
@@ -100,4 +123,13 @@ func main() {
 
 	for {
 	} // Pour empêcher le serveur de s'éteindre
+}
+
+func otherClient(id int) int {
+	if id == 0 {
+		return 1
+	} else if id == 1 {
+		return 0
+	}
+	return -1
 }

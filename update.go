@@ -1,10 +1,12 @@
 package main
 
 import (
-	"math/rand"
-
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"log"
+	"math/rand"
+	"network"
+	"strconv"
 )
 
 // Mise à jour de l'état du jeu en fonction des entrées au clavier.
@@ -19,13 +21,16 @@ func (g *Game) Update() error {
 		}
 	case colorSelectState:
 		if g.colorSelectUpdate() {
+			if !(g.clientId == 0) {
+				g.turn = p2Turn
+			}
 			g.gameState++
 		}
 	case playState:
-		g.tokenPosUpdate()
 		var lastXPositionPlayed int
 		var lastYPositionPlayed int
 		if g.turn == p1Turn {
+			g.tokenPosUpdate()
 			lastXPositionPlayed, lastYPositionPlayed = g.p1Update()
 		} else {
 			lastXPositionPlayed, lastYPositionPlayed = g.p2Update()
@@ -55,52 +60,90 @@ func (g *Game) titleUpdate() bool {
 
 // Mise à jour de l'état du jeu lors de la sélection des couleurs.
 func (g *Game) colorSelectUpdate() bool {
-
+	//var change = false
 	col := g.p1Color % globalNumColorCol
 	line := g.p1Color / globalNumColorLine
+	if !g.p1ChooseToken {
+		if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
+			col = (col + 1) % globalNumColorCol
+			//change = true
+		}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
-		col = (col + 1) % globalNumColorCol
+		if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
+			col = (col - 1 + globalNumColorCol) % globalNumColorCol
+			//change = true
+		}
+
+		if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
+			line = (line + 1) % globalNumColorLine
+			//change = true
+		}
+
+		if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
+			line = (line - 1 + globalNumColorLine) % globalNumColorLine
+			//change = true
+		}
 	}
-
-	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
-		col = (col - 1 + globalNumColorCol) % globalNumColorCol
-	}
-
-	if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
-		line = (line + 1) % globalNumColorLine
-	}
-
-	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
-		line = (line - 1 + globalNumColorLine) % globalNumColorLine
-	}
-
 	g.p1Color = line*globalNumColorLine + col
+	/*
+		println(g.p1Color)
+		if change {
+			var msg string = network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
+			log.Println("SEND TO SERVER: " + msg)
+			g.writeChan <- msg
+		}*/
+	select {
+	case message := <-g.readChan:
+		if message[:1] == network.CLIENT_CHOOSE_TOKEN {
+			g.p2ChooseToken = true
+			g.p2Color, _ = strconv.Atoi(string(message[2]))
+			if g.p1ChooseToken {
+				return true
+			}
+		}
+		if message[:1] == network.TOKEN_CHOICE_POSITION {
+			log.Println(message[1])
+		}
+	default:
+	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		g.writeChan <- network.CLIENT_CHOOSE_TOKEN + strconv.Itoa(g.p1Color)
+		g.p1ChooseToken = true
+		if g.p2ChooseToken == true {
+			log.Println("All token choosen")
+			return true
+		}
+		return false
+
 		g.p2Color = rand.Intn(globalNumColor)
 		if g.p2Color == g.p1Color {
 			g.p2Color = (g.p2Color + 1) % globalNumColor
 		}
-		return true
-	}
 
+		//g.writeChan <- network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.clientId) + strconv.Itoa(g.p2Color)
+	}
 	return false
 }
 
 // Gestion de la position du prochain pion à jouer par le joueur 1.
 func (g *Game) tokenPosUpdate() {
+
 	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
 		g.tokenPosition = (g.tokenPosition - 1 + globalNumTilesX) % globalNumTilesX
+		g.writeChan <- network.TOKEN_POSITION + strconv.Itoa(g.tokenPosition)
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
 		g.tokenPosition = (g.tokenPosition + 1) % globalNumTilesX
+		g.writeChan <- network.TOKEN_POSITION + strconv.Itoa(g.tokenPosition)
 	}
+
 }
 
 // Gestion du moment où le prochain pion est joué par le joueur 1.
 func (g *Game) p1Update() (int, int) {
+
 	lastXPositionPlayed := -1
 	lastYPositionPlayed := -1
 	if inpututil.IsKeyJustPressed(ebiten.KeyDown) || inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
@@ -109,12 +152,42 @@ func (g *Game) p1Update() (int, int) {
 			lastXPositionPlayed = g.tokenPosition
 			lastYPositionPlayed = yPos
 		}
+		g.writeChan <- network.CLIENT_TOKEN_PLAY + strconv.Itoa(lastXPositionPlayed) + strconv.Itoa(lastYPositionPlayed)
 	}
 	return lastXPositionPlayed, lastYPositionPlayed
 }
 
 // Gestion de la position du prochain pion joué par le joueur 2 et
 // du moment où ce pion est joué.
+func (g *Game) p2Update() (int, int) {
+	var lastYpos = -1
+	var lastXpos = -1
+	select {
+	case message := <-g.readChan:
+		log.Println("on est la", message)
+		if message[:1] == network.TOKEN_POSITION {
+			position, _ := strconv.Atoi(string(message[1]))
+			log.Println(position)
+
+			g.tokenPosition = position
+
+			return lastXpos, lastYpos
+		}
+		if message[:1] == network.CLIENT_TOKEN_PLAY {
+			position, _ := strconv.Atoi(string(message[1]))
+			updated, yPos := g.updateGrid(p2Token, position)
+			for ; !updated; updated, yPos = g.updateGrid(p2Token, position) {
+				position = (position + 1) % globalNumTilesX
+			}
+			g.turn = p1Turn
+			return position, yPos
+		}
+	default:
+	}
+	return lastXpos, lastYpos
+}
+
+/*
 func (g *Game) p2Update() (int, int) {
 	position := rand.Intn(globalNumTilesX)
 	updated, yPos := g.updateGrid(p2Token, position)
@@ -123,7 +196,7 @@ func (g *Game) p2Update() (int, int) {
 	}
 	g.turn = p1Turn
 	return position, yPos
-}
+}*/
 
 // Mise à jour de l'état du jeu à l'écran des résultats.
 func (g Game) resultUpdate() bool {
