@@ -66,30 +66,25 @@ func (g *Game) colorSelectUpdate() bool {
 	if !g.p1ChooseToken {
 		if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
 			col = (col + 1) % globalNumColorCol
-			//change = true
 		}
 
 		if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
 			col = (col - 1 + globalNumColorCol) % globalNumColorCol
-			//change = true
 		}
 
 		if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
 			line = (line + 1) % globalNumColorLine
-			//change = true
 		}
 
 		if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
 			line = (line - 1 + globalNumColorLine) % globalNumColorLine
-			//change = true
 		}
+		moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
+		//log.Println("SEND TO SERVER: " + moveMessage)
+		g.writeChan <- moveMessage
+
 	}
 	g.p1Color = line*globalNumColorLine + col
-
-	// Envoie les mouvements au serveur
-	moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
-	log.Println("SEND TO SERVER: " + moveMessage)
-	g.writeChan <- moveMessage
 
 	/*
 		println(g.p1Color)
@@ -109,7 +104,7 @@ func (g *Game) colorSelectUpdate() bool {
 		}
 		if message[:1] == network.TOKEN_CHOICE_POSITION {
 			pos, _ := strconv.Atoi(message[1:])
-			log.Println("POSITION RECUE: ", message[1:])
+			//log.Println("POSITION RECUE: ", message[1:])
 			g.p2Color = pos
 		}
 	default:
@@ -173,10 +168,10 @@ func (g *Game) p2Update() (int, int) {
 	var lastXpos = -1
 	select {
 	case message := <-g.readChan:
-		log.Println("on est la", message)
+		//log.Println("on est la", message)
 		if message[:1] == network.TOKEN_POSITION {
 			position, _ := strconv.Atoi(string(message[1]))
-			log.Println(position)
+			//log.Println(position)
 
 			g.tokenPosition = position
 

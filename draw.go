@@ -1,11 +1,10 @@
 package main
 
 import (
-	"image/color"
-
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/hajimehoshi/ebiten/v2/vector"
+	"image/color"
 )
 
 // Affichage des graphismes à l'écran selon l'état actuel du jeu.
@@ -48,6 +47,9 @@ func (g Game) colorSelectDraw(screen *ebiten.Image) {
 		xPos := (globalNumTilesX-globalNumColorCol)/2 + col
 		yPos := (globalNumTilesY-globalNumColorLine)/2 + line
 
+		if numColor == g.p2Color {
+			vector.DrawFilledCircle(screen, float32(globalTileSize/2+xPos*globalTileSize), float32(globalTileSize+globalTileSize/2+yPos*globalTileSize), globalTileSize/2, p2GlobalSelectColor, true)
+		}
 		if numColor == g.p1Color {
 			vector.DrawFilledCircle(screen, float32(globalTileSize/2+xPos*globalTileSize), float32(globalTileSize+globalTileSize/2+yPos*globalTileSize), globalTileSize/2, globalSelectColor, true)
 		}
