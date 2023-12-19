@@ -85,11 +85,17 @@ func (g *Game) colorSelectUpdate() bool {
 		}
 	}
 	g.p1Color = line*globalNumColorLine + col
+
+	// Envoie les mouvements au serveur
+	moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
+	log.Println("SEND TO SERVER: " + moveMessage)
+	g.writeChan <- moveMessage
+
 	/*
 		println(g.p1Color)
 		if change {
 			var msg string = network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
-			log.Println("SEND TO SERVER: " + msg)
+
 			g.writeChan <- msg
 		}*/
 	select {
@@ -102,7 +108,9 @@ func (g *Game) colorSelectUpdate() bool {
 			}
 		}
 		if message[:1] == network.TOKEN_CHOICE_POSITION {
-			log.Println(message[1])
+			pos, _ := strconv.Atoi(message[1:])
+			log.Println("POSITION RECUE: ", message[1:])
+			g.p2Color = pos
 		}
 	default:
 	}
@@ -122,6 +130,7 @@ func (g *Game) colorSelectUpdate() bool {
 		}
 
 		//g.writeChan <- network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.clientId) + strconv.Itoa(g.p2Color)
+
 	}
 	return false
 }
