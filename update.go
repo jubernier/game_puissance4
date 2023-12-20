@@ -4,7 +4,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"log"
-	"math/rand"
 	"network"
 	"strconv"
 )
@@ -60,41 +59,12 @@ func (g *Game) titleUpdate() bool {
 
 // Mise à jour de l'état du jeu lors de la sélection des couleurs.
 func (g *Game) colorSelectUpdate() bool {
-	//var change = false
-	col := g.p1Color % globalNumColorCol
-	line := g.p1Color / globalNumColorLine
-	if !g.p1ChooseToken {
-		if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
-			col = (col + 1) % globalNumColorCol
-		}
-
-		if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
-			col = (col - 1 + globalNumColorCol) % globalNumColorCol
-		}
-
-		if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
-			line = (line + 1) % globalNumColorLine
-		}
-
-		if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
-			line = (line - 1 + globalNumColorLine) % globalNumColorLine
-		}
-		moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
-		//log.Println("SEND TO SERVER: " + moveMessage)
-		g.writeChan <- moveMessage
-
-	}
-	g.p1Color = line*globalNumColorLine + col
-
-	/*
-		println(g.p1Color)
-		if change {
-			var msg string = network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
-
-			g.writeChan <- msg
-		}*/
 	select {
 	case message := <-g.readChan:
+		if message[:1] == network.CLIENT_REMOVE_TOKEN {
+			g.p2ChooseToken = false
+			log.Println("le p2 à désectionner son token", g.clientId, message[1:])
+		}
 		if message[:1] == network.CLIENT_CHOOSE_TOKEN {
 			g.p2ChooseToken = true
 			g.p2Color, _ = strconv.Atoi(string(message[2]))
@@ -106,9 +76,57 @@ func (g *Game) colorSelectUpdate() bool {
 			pos, _ := strconv.Atoi(message[1:])
 			//log.Println("POSITION RECUE: ", message[1:])
 			g.p2Color = pos
+			if g.p1Color == g.p2Color {
+				log.Println("lalala OH")
+				g.p1Color = (g.p1Color + 1) % globalNumColor
+				moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
+				//log.Println("SEND TO SERVER: " + moveMessage)
+				g.writeChan <- moveMessage
+			}
 		}
+
 	default:
 	}
+	//var change = false
+	col := g.p1Color % globalNumColorCol
+	line := g.p1Color / globalNumColorLine
+	//var change = false
+	if !g.p1ChooseToken {
+		if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
+			col = (col + 1) % globalNumColorCol
+			//change = true
+		}
+
+		if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
+			col = (col - 1 + globalNumColorCol) % globalNumColorCol
+			//change = true
+		}
+
+		if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
+			line = (line + 1) % globalNumColorLine
+			//change = true
+		}
+
+		if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
+			line = (line - 1 + globalNumColorLine) % globalNumColorLine
+			//change = true
+		}
+		//if change {
+		moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
+		//log.Println("SEND TO SERVER: " + moveMessage)
+		g.writeChan <- moveMessage
+		//}
+	}
+	g.p1Color = line*globalNumColorLine + col
+
+	/*
+		println(g.p1Color)
+		if change {
+			var msg string = network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
+
+			g.writeChan <- msg
+		}
+	*/
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 		g.writeChan <- network.CLIENT_CHOOSE_TOKEN + strconv.Itoa(g.p1Color)
@@ -118,14 +136,12 @@ func (g *Game) colorSelectUpdate() bool {
 			return true
 		}
 		return false
-
-		g.p2Color = rand.Intn(globalNumColor)
-		if g.p2Color == g.p1Color {
-			g.p2Color = (g.p2Color + 1) % globalNumColor
-		}
-
 		//g.writeChan <- network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.clientId) + strconv.Itoa(g.p2Color)
 
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+		g.writeChan <- network.CLIENT_REMOVE_TOKEN + strconv.Itoa(g.p1Color)
+		g.p1ChooseToken = false
 	}
 	return false
 }

@@ -13,4 +13,5 @@ const (
 	ISHOST                = "l"
 	TOKEN_POSITION        = "m"
 	CLIENT_TOKEN_PLAY     = "n"
+	CLIENT_REMOVE_TOKEN   = "o"
 )

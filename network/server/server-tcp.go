@@ -85,10 +85,6 @@ func (s *Server) comClient(clientID int) {
 		// Cas lorsqu'un client vient de se connecter
 		case network.CLIENT_CONNECTED:
 			log.Println("client ", clientID, "connecté")
-			/*
-				case network.TOKEN_CHOICE_POSITION:
-					println("La couleur est ", message[2], "pour le client numero", clientID)
-			*/
 		case network.CLIENT_CHOOSE_TOKEN:
 			log.Println("le client", clientID, "a choisis son personage", message[1])
 			s.writeChans[otherClient(clientID)] <- network.CLIENT_CHOOSE_TOKEN + strconv.Itoa(clientID) + string(message[1])
@@ -101,6 +97,8 @@ func (s *Server) comClient(clientID int) {
 		case network.TOKEN_CHOICE_POSITION:
 			s.writeChans[otherClient(clientID)] <- network.TOKEN_CHOICE_POSITION + message[1:]
 			//log.Println("Voici le message", message, "par client", clientID)
+		case network.CLIENT_REMOVE_TOKEN:
+			s.writeChans[otherClient(clientID)] <- network.CLIENT_REMOVE_TOKEN + message[1:]
 		}
 	}
 	//defer s.mutexCountRC.Unlock()
