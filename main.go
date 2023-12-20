@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
 	"golang.org/x/image/font/opentype"
@@ -41,6 +42,7 @@ func main() {
 	g := InitGame("localhost", "8080")
 	//ip := os.Args
 	ebiten.SetWindowTitle("Programmation système : projet puissance 4")
+	ebiten.SetWindowTitle("Votre identifiant client : " + fmt.Sprint(g.clientId))
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 
 	if err := ebiten.RunGame(&g); err != nil {

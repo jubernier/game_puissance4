@@ -92,6 +92,6 @@ func InitGame(ip, port string) (g Game) {
 		log.Println("Identifiant du client : ", idFromServ)
 	}
 
-	//g.writeChan <- network.CLIENT_CONNECTED
+	g.writeChan <- network.CLIENT_CONNECTED
 	return g
 }

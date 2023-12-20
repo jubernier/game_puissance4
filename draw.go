@@ -88,6 +88,14 @@ func (g Game) resultDraw(screen *ebiten.Image) {
 	} else if g.result == p2wins {
 		message = "Perdu…"
 	}
+	/*ebiten.SetWindowTitle("Want to restart ? (Press Enter)")
+	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		if g.responseSend {
+			text = "    You are ready !\n   Waiting players " + fmt.Sprint(4-g.clientsCount)
+		} else {
+			text = "Press SPACE to restart !\n   Waiting players " + fmt.Sprint(4-g.clientsCount)
+		}
+	}*/
 	text.Draw(screen, message, smallFont, 300, 400, globalTextColor)
 }
 
