@@ -59,6 +59,33 @@ func (g *Game) titleUpdate() bool {
 
 // Mise à jour de l'état du jeu lors de la sélection des couleurs.
 func (g *Game) colorSelectUpdate() bool {
+	select {
+	case message := <-g.readChan:
+		if message[:1] == network.CLIENT_REMOVE_TOKEN {
+			g.p2ChooseToken = false
+			log.Println("le p2 à désectionner son token", g.clientId, message[1:])
+		}
+		if message[:1] == network.CLIENT_CHOOSE_TOKEN {
+			g.p2ChooseToken = true
+			g.p2Color, _ = strconv.Atoi(string(message[2]))
+			if g.p1ChooseToken {
+				return true
+			}
+		}
+		if message[:1] == network.TOKEN_CHOICE_POSITION {
+			pos, _ := strconv.Atoi(message[1:])
+			//log.Println("POSITION RECUE: ", message[1:])
+			g.p2Color = pos
+			if g.p1Color == g.p2Color {
+				g.p1Color = (g.p1Color + 1) % globalNumColor
+				moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
+				//log.Println("SEND TO SERVER: " + moveMessage)
+				g.writeChan <- moveMessage
+			}
+		}
+
+	default:
+	}
 	col := g.p1Color % globalNumColorCol
 	line := g.p1Color / globalNumColorLine
 
@@ -88,33 +115,6 @@ func (g *Game) colorSelectUpdate() bool {
 			moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
 			g.p1Change = g.p1Color
 			g.writeChan <- moveMessage
-		}
-		select {
-		case message := <-g.readChan:
-			if message[:1] == network.CLIENT_REMOVE_TOKEN {
-				g.p2ChooseToken = false
-				log.Println("le p2 à désectionner son token", g.clientId, message[1:])
-			}
-			if message[:1] == network.CLIENT_CHOOSE_TOKEN {
-				g.p2ChooseToken = true
-				g.p2Color, _ = strconv.Atoi(string(message[2]))
-				if g.p1ChooseToken {
-					return true
-				}
-			}
-			if message[:1] == network.TOKEN_CHOICE_POSITION {
-				pos, _ := strconv.Atoi(message[1:])
-				//log.Println("POSITION RECUE: ", message[1:])
-				g.p2Color = pos
-				if g.p1Color == g.p2Color {
-					g.p1Color = (g.p1Color + 1) % globalNumColor
-					moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
-					//log.Println("SEND TO SERVER: " + moveMessage)
-					g.writeChan <- moveMessage
-				}
-			}
-
-		default:
 		}
 	}
 	/*

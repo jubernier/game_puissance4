@@ -28,6 +28,7 @@ var (
 	globalTextColor       color.Color = color.NRGBA{R: 25, G: 25, B: 5, A: 255}
 	globalSelectColor     color.Color = color.NRGBA{R: 25, G: 25, B: 5, A: 255}
 	p2GlobalSelectColor   color.Color = color.NRGBA{R: 122, G: 122, B: 122, A: 255}
+	globalColorChoose     color.Color = color.NRGBA{R: 200, G: 20, B: 60, A: 255}
 	smallFont             font.Face
 	largeFont             font.Face
 	globalTokenColors     [globalNumColor]color.Color = [globalNumColor]color.Color{

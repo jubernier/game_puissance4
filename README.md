@@ -16,9 +16,6 @@ Groupe : Basma Malki & Justine Bernier
 - explication extensions
 
 
-
----------------partie qu'a fait Ewen-----------------------
-
 ## Extensions
 
 |                                 Extension                                 |                                                                                                                   Localisation client                                                                                                                   |                                                                                    Localisation serveur                                                                                     |                       Temps de réalisation                        |                                                                                                                                                                                                                                                                                                                                        Commentaires                                                                                                                                                                                                                                                                                                                                         |

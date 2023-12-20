@@ -53,6 +53,12 @@ func (g Game) colorSelectDraw(screen *ebiten.Image) {
 		if numColor == g.p1Color {
 			vector.DrawFilledCircle(screen, float32(globalTileSize/2+xPos*globalTileSize), float32(globalTileSize+globalTileSize/2+yPos*globalTileSize), globalTileSize/2, globalSelectColor, true)
 		}
+		if numColor == g.p1Color && g.p1ChooseToken {
+			vector.DrawFilledCircle(screen, float32(globalTileSize/2+xPos*globalTileSize), float32(globalTileSize+globalTileSize/2+yPos*globalTileSize), globalTileSize/2, globalColorChoose, true)
+		}
+		if numColor == g.p2Color && g.p2ChooseToken {
+			vector.DrawFilledCircle(screen, float32(globalTileSize/2+xPos*globalTileSize), float32(globalTileSize+globalTileSize/2+yPos*globalTileSize), globalTileSize/2, globalColorChoose, true)
+		}
 		vector.DrawFilledCircle(screen, float32(globalTileSize/2+xPos*globalTileSize), float32(globalTileSize+globalTileSize/2+yPos*globalTileSize), globalTileSize/2-globalCircleMargin, globalTokenColors[numColor], true)
 
 		col++
