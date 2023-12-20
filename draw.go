@@ -30,7 +30,8 @@ func (g Game) titleDraw(screen *ebiten.Image) {
 	text.Draw(screen, "Puissance 4 en réseau", largeFont, 90, 150, globalTextColor)
 	text.Draw(screen, "Projet de programmation système", smallFont, 105, 190, globalTextColor)
 	text.Draw(screen, "Année 2023-2024", smallFont, 210, 230, globalTextColor)
-
+	// Affichage du nombre de joueurs connectés
+	//text.Draw(screen, "Le nombre de joueurs connectés : "+string(g.clientInQueue), smallFont, 105, 300, globalTextColor)
 	if g.stateFrame >= globalBlinkDuration/3 {
 		text.Draw(screen, "Appuyez sur entrée", smallFont, 210, 500, globalTextColor)
 	}
@@ -46,13 +47,14 @@ func (g Game) colorSelectDraw(screen *ebiten.Image) {
 
 		xPos := (globalNumTilesX-globalNumColorCol)/2 + col
 		yPos := (globalNumTilesY-globalNumColorLine)/2 + line
-
+		// Ajout de l'affichage de la sélection du joueur 2
 		if numColor == g.p2Color {
 			vector.DrawFilledCircle(screen, float32(globalTileSize/2+xPos*globalTileSize), float32(globalTileSize+globalTileSize/2+yPos*globalTileSize), globalTileSize/2, p2GlobalSelectColor, true)
 		}
 		if numColor == g.p1Color {
 			vector.DrawFilledCircle(screen, float32(globalTileSize/2+xPos*globalTileSize), float32(globalTileSize+globalTileSize/2+yPos*globalTileSize), globalTileSize/2, globalSelectColor, true)
 		}
+		// Changement de la couleur de sélection lorsque l'un des joueurs a choisis sa couleur
 		if numColor == g.p1Color && g.p1ChooseToken {
 			vector.DrawFilledCircle(screen, float32(globalTileSize/2+xPos*globalTileSize), float32(globalTileSize+globalTileSize/2+yPos*globalTileSize), globalTileSize/2, globalColorChoose, true)
 		}

@@ -20,6 +20,7 @@ func (g *Game) Update() error {
 		}
 	case colorSelectState:
 		if g.colorSelectUpdate() {
+			// attribution du tour du deuxième joueur
 			if !(g.clientId == 0) {
 				g.turn = p2Turn
 			}
@@ -28,6 +29,7 @@ func (g *Game) Update() error {
 	case playState:
 		var lastXPositionPlayed int
 		var lastYPositionPlayed int
+		// mise à jour du jeu affichage de p1 et p2
 		if g.turn == p1Turn {
 			g.tokenPosUpdate()
 			lastXPositionPlayed, lastYPositionPlayed = g.p1Update()
@@ -53,18 +55,30 @@ func (g *Game) Update() error {
 
 // Mise à jour de l'état du jeu à l'écran titre.
 func (g *Game) titleUpdate() bool {
+	/*
+		select {
+		case message := <-g.readChan:
+			if message[:1] == network.CLIENTS_IN_QUEUE {
+				nbClients, _ := strconv.Atoi(message[1:])
+				g.clientInQueue = nbClients
+				log.Println(g.clientInQueue)
+			}
+		}*/
 	g.stateFrame = g.stateFrame % globalBlinkDuration
 	return inpututil.IsKeyJustPressed(ebiten.KeyEnter)
 }
 
 // Mise à jour de l'état du jeu lors de la sélection des couleurs.
 func (g *Game) colorSelectUpdate() bool {
+	// lecture des messages envoyés par le serveur
 	select {
 	case message := <-g.readChan:
+		// extension n°3 : le p2 a déselectionné sont personnage
 		if message[:1] == network.CLIENT_REMOVE_TOKEN {
 			g.p2ChooseToken = false
 			log.Println("le p2 à désectionner son token", g.clientId, message[1:])
 		}
+		// le p2 a choisis sont personnage
 		if message[:1] == network.CLIENT_CHOOSE_TOKEN {
 			g.p2ChooseToken = true
 			g.p2Color, _ = strconv.Atoi(string(message[2]))
@@ -72,14 +86,16 @@ func (g *Game) colorSelectUpdate() bool {
 				return true
 			}
 		}
+		// extension n°1 : update du déplacement de p2 dans la grille
 		if message[:1] == network.TOKEN_CHOICE_POSITION {
 			pos, _ := strconv.Atoi(message[1:])
 			//log.Println("POSITION RECUE: ", message[1:])
 			g.p2Color = pos
+			// extension n°2 : vérification si le p1 a la même position que le p2 il est décalé
 			if g.p1Color == g.p2Color {
 				g.p1Color = (g.p1Color + 1) % globalNumColor
 				moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
-				//log.Println("SEND TO SERVER: " + moveMessage)
+				log.Println("SEND TO SERVER: " + moveMessage)
 				g.writeChan <- moveMessage
 			}
 		}
@@ -92,40 +108,28 @@ func (g *Game) colorSelectUpdate() bool {
 	if !g.p1ChooseToken {
 		if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
 			col = (col + 1) % globalNumColorCol
-			//change = true
 		}
 
 		if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
 			col = (col - 1 + globalNumColorCol) % globalNumColorCol
-			//change = true
 		}
 
 		if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
 			line = (line + 1) % globalNumColorLine
-			//change = true
 		}
 
 		if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
 			line = (line - 1 + globalNumColorLine) % globalNumColorLine
-			//change = true
 		}
 		g.p1Color = line*globalNumColorLine + col
-
+		// extension n°1 : seulement si le personnage s'est déplacé dans la grille le p1 envoie sa position au p2
 		if g.p1Change != g.p1Color {
 			moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
 			g.p1Change = g.p1Color
 			g.writeChan <- moveMessage
 		}
 	}
-	/*
-		println(g.p1Color)
-		if change {
-			var msg string = network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
-
-			g.writeChan <- msg
-		}
-	*/
-
+	// si le p1 a choisit sa couleur il l'envoie au serveur
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 		g.writeChan <- network.CLIENT_CHOOSE_TOKEN + strconv.Itoa(g.p1Color)
 		g.p1ChooseToken = true
@@ -137,6 +141,7 @@ func (g *Game) colorSelectUpdate() bool {
 		//g.writeChan <- network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.clientId) + strconv.Itoa(g.p2Color)
 
 	}
+	// extension n°3 : le personnage
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		g.writeChan <- network.CLIENT_REMOVE_TOKEN + strconv.Itoa(g.p1Color)
 		g.p1ChooseToken = false
@@ -171,6 +176,7 @@ func (g *Game) p1Update() (int, int) {
 			lastXPositionPlayed = g.tokenPosition
 			lastYPositionPlayed = yPos
 		}
+		// Envoie des informations de déplacement de p1 au serveur
 		g.writeChan <- network.CLIENT_TOKEN_PLAY + strconv.Itoa(lastXPositionPlayed) + strconv.Itoa(lastYPositionPlayed)
 	}
 	return lastXPositionPlayed, lastYPositionPlayed
@@ -183,15 +189,14 @@ func (g *Game) p2Update() (int, int) {
 	var lastXpos = -1
 	select {
 	case message := <-g.readChan:
-		//log.Println("on est la", message)
+		// le message indique la position du pion p2 à l'horizontale
 		if message[:1] == network.TOKEN_POSITION {
 			position, _ := strconv.Atoi(string(message[1]))
-			//log.Println(position)
-
 			g.tokenPosition = position
 
 			return lastXpos, lastYpos
 		}
+		// le message indique la position du pion p2 sur la grille de jeu
 		if message[:1] == network.CLIENT_TOKEN_PLAY {
 			position, _ := strconv.Atoi(string(message[1]))
 			updated, yPos := g.updateGrid(p2Token, position)

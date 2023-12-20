@@ -26,7 +26,7 @@ type Game struct {
 	isReadyNextStep bool
 	isHost          bool
 	p1Change        int
-
+	clientInQueue   int
 	// test
 
 }
@@ -73,6 +73,7 @@ func (g *Game) reset() {
 	}
 }
 
+// assure la connection entre serveur et client
 func InitGame(ip, port string) (g Game) {
 	// Open connection
 	log.Println(ip + ":" + port)
@@ -89,13 +90,14 @@ func InitGame(ip, port string) (g Game) {
 	go network.ReadFromNetWork(bufio.NewReader(conn), g.readChan)
 	go network.WriteFromNetWork(bufio.NewWriter(conn), g.writeChan)
 
+	// lecture de message envoyé par le serveur
 	var message = <-g.readChan
 	if message[:1] == network.CLIENT_NUMBER {
 		var idFromServ, _ = strconv.Atoi(message[1:])
 		g.clientId = idFromServ
 		log.Println("Identifiant du client : ", idFromServ)
 	}
-
+	// envoie message au serveur
 	g.writeChan <- network.CLIENT_CONNECTED
 	return g
 }
