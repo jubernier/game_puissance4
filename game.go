@@ -25,6 +25,7 @@ type Game struct {
 	p2ChooseToken   bool
 	isReadyNextStep bool
 	isHost          bool
+	p1Change        int
 }
 
 // Constantes pour représenter la séquence de jeu actuelle (écran titre,

@@ -59,38 +59,9 @@ func (g *Game) titleUpdate() bool {
 
 // Mise à jour de l'état du jeu lors de la sélection des couleurs.
 func (g *Game) colorSelectUpdate() bool {
-	select {
-	case message := <-g.readChan:
-		if message[:1] == network.CLIENT_REMOVE_TOKEN {
-			g.p2ChooseToken = false
-			log.Println("le p2 à désectionner son token", g.clientId, message[1:])
-		}
-		if message[:1] == network.CLIENT_CHOOSE_TOKEN {
-			g.p2ChooseToken = true
-			g.p2Color, _ = strconv.Atoi(string(message[2]))
-			if g.p1ChooseToken {
-				return true
-			}
-		}
-		if message[:1] == network.TOKEN_CHOICE_POSITION {
-			pos, _ := strconv.Atoi(message[1:])
-			//log.Println("POSITION RECUE: ", message[1:])
-			g.p2Color = pos
-			if g.p1Color == g.p2Color {
-				log.Println("lalala OH")
-				g.p1Color = (g.p1Color + 1) % globalNumColor
-				moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
-				//log.Println("SEND TO SERVER: " + moveMessage)
-				g.writeChan <- moveMessage
-			}
-		}
-
-	default:
-	}
-	//var change = false
 	col := g.p1Color % globalNumColorCol
 	line := g.p1Color / globalNumColorLine
-	//var change = false
+
 	if !g.p1ChooseToken {
 		if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
 			col = (col + 1) % globalNumColorCol
@@ -111,14 +82,41 @@ func (g *Game) colorSelectUpdate() bool {
 			line = (line - 1 + globalNumColorLine) % globalNumColorLine
 			//change = true
 		}
-		//if change {
-		moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
-		//log.Println("SEND TO SERVER: " + moveMessage)
-		g.writeChan <- moveMessage
-		//}
-	}
-	g.p1Color = line*globalNumColorLine + col
+		g.p1Color = line*globalNumColorLine + col
 
+		if g.p1Change != g.p1Color {
+			moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
+			g.p1Change = g.p1Color
+			g.writeChan <- moveMessage
+		}
+		select {
+		case message := <-g.readChan:
+			if message[:1] == network.CLIENT_REMOVE_TOKEN {
+				g.p2ChooseToken = false
+				log.Println("le p2 à désectionner son token", g.clientId, message[1:])
+			}
+			if message[:1] == network.CLIENT_CHOOSE_TOKEN {
+				g.p2ChooseToken = true
+				g.p2Color, _ = strconv.Atoi(string(message[2]))
+				if g.p1ChooseToken {
+					return true
+				}
+			}
+			if message[:1] == network.TOKEN_CHOICE_POSITION {
+				pos, _ := strconv.Atoi(message[1:])
+				//log.Println("POSITION RECUE: ", message[1:])
+				g.p2Color = pos
+				if g.p1Color == g.p2Color {
+					g.p1Color = (g.p1Color + 1) % globalNumColor
+					moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
+					//log.Println("SEND TO SERVER: " + moveMessage)
+					g.writeChan <- moveMessage
+				}
+			}
+
+		default:
+		}
+	}
 	/*
 		println(g.p1Color)
 		if change {
@@ -144,6 +142,7 @@ func (g *Game) colorSelectUpdate() bool {
 		g.p1ChooseToken = false
 	}
 	return false
+
 }
 
 // Gestion de la position du prochain pion à jouer par le joueur 1.
