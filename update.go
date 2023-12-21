@@ -15,6 +15,7 @@ func (g *Game) Update() error {
 
 	switch g.gameState {
 	case titleState:
+		g.isReadyNextStep = false
 		if g.titleUpdate() {
 			g.gameState++
 		}
@@ -55,16 +56,19 @@ func (g *Game) Update() error {
 
 // Mise à jour de l'état du jeu à l'écran titre.
 func (g *Game) titleUpdate() bool {
-	/*
-		select {
-		case message := <-g.readChan:
-			if message[:1] == network.CLIENTS_IN_QUEUE {
-				nbClients, _ := strconv.Atoi(message[1:])
-				g.clientInQueue = nbClients
-				log.Println(g.clientInQueue)
-			}
-		}*/
+	select {
+	case message := <-g.readChan:
+		if message[:1] == network.CLIENTS_IN_QUEUE {
+			nbClients, _ := strconv.Atoi(message[1:])
+			g.clientInQueue = nbClients
+			log.Println("nb de joueur :", g.clientInQueue)
+		}
+	default:
+	}
 	g.stateFrame = g.stateFrame % globalBlinkDuration
+	if g.clientInQueue == 2 {
+		g.isReadyNextStep = true
+	}
 	return inpututil.IsKeyJustPressed(ebiten.KeyEnter)
 }
 

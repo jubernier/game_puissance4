@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"image/color"
+	"strconv"
 )
 
 // Affichage des graphismes à l'écran selon l'état actuel du jeu.
@@ -30,10 +33,13 @@ func (g Game) titleDraw(screen *ebiten.Image) {
 	text.Draw(screen, "Puissance 4 en réseau", largeFont, 90, 150, globalTextColor)
 	text.Draw(screen, "Projet de programmation système", smallFont, 105, 190, globalTextColor)
 	text.Draw(screen, "Année 2023-2024", smallFont, 210, 230, globalTextColor)
+	var message = "Le nombre de joueurs connectés : " + strconv.Itoa(g.clientInQueue)
 	// Affichage du nombre de joueurs connectés
-	//text.Draw(screen, "Le nombre de joueurs connectés : "+string(g.clientInQueue), smallFont, 105, 300, globalTextColor)
-	if g.stateFrame >= globalBlinkDuration/3 {
-		text.Draw(screen, "Appuyez sur entrée", smallFont, 210, 500, globalTextColor)
+	text.Draw(screen, message, smallFont, 105, 300, globalTextColor)
+	if g.isReadyNextStep {
+		if g.stateFrame >= globalBlinkDuration/3 {
+			text.Draw(screen, "Appuyez sur entrée", smallFont, 210, 500, globalTextColor)
+		}
 	}
 }
 
@@ -76,10 +82,12 @@ func (g Game) playDraw(screen *ebiten.Image) {
 	g.drawGrid(screen)
 	if g.turn == p1Turn {
 		vector.DrawFilledCircle(screen, float32(globalTileSize/2+g.tokenPosition*globalTileSize), float32(globalTileSize/2), globalTileSize/2-globalCircleMargin, globalTokenColors[g.p1Color], true)
+		// Ajout de l'information indiquant le tour de p1
+		text.Draw(screen, "ton tour", smallFont, 15, 30, globalTextColor)
+		// Ajout de l'affichage de p2 avec sa couleur
 	} else {
 		vector.DrawFilledCircle(screen, float32(globalTileSize/2+g.tokenPosition*globalTileSize), float32(globalTileSize/2), globalTileSize/2-globalCircleMargin, globalTokenColors[g.p2Color], true)
 	}
-
 }
 
 // Affichage des graphismes à l'écran des résultats.
@@ -96,14 +104,16 @@ func (g Game) resultDraw(screen *ebiten.Image) {
 	} else if g.result == p2wins {
 		message = "Perdu…"
 	}
-	/*ebiten.SetWindowTitle("Want to restart ? (Press Enter)")
+	ebiten.SetWindowTitle("Vous voulez rejouer ? (Appuyer sur entrée)")
+	var texte string
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		if g.responseSend {
-			text = "    You are ready !\n   Waiting players " + fmt.Sprint(4-g.clientsCount)
+		if g.clientInQueue != 2 {
+			texte = "You are ready !\n  Waiting players " + fmt.Sprint(2-g.clientInQueue)
 		} else {
-			text = "Press SPACE to restart !\n   Waiting players " + fmt.Sprint(4-g.clientsCount)
+			texte = "Press SPACE to restart !\n   Waiting players " + fmt.Sprint(2-g.clientInQueue)
 		}
-	}*/
+	}
+	text.Draw(screen, texte, smallFont, 300, 500, globalTextColor)
 	text.Draw(screen, message, smallFont, 300, 400, globalTextColor)
 }
 
