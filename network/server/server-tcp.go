@@ -77,25 +77,30 @@ func (s *Server) comClient(clientID int) {
 	var message string
 	for {
 
-		message = <-s.readChans[clientID] // On lit le message du channel du client
+		// On lit le message du channel du client
 		// On rappelle que cette fonction est lancée comme go routine et que le serveur lance cette fonction pour chaque client
-		switch message[:1] {
-		// Cas lorsqu'un client vient de se connecter
-		case network.CLIENT_CONNECTED:
-			log.Println("client ", clientID, "connecté")
-		case network.CLIENT_CHOOSE_TOKEN:
-			log.Println("le client", clientID, "a choisis son personage", message[1])
-			s.writeChans[otherClient(clientID)] <- network.CLIENT_CHOOSE_TOKEN + strconv.Itoa(clientID) + string(message[1])
-		case network.TOKEN_POSITION:
-			log.Println(message[1:])
-			s.writeChans[otherClient(clientID)] <- network.TOKEN_POSITION + message[1:]
-		case network.CLIENT_TOKEN_PLAY:
-			s.writeChans[otherClient(clientID)] <- network.CLIENT_TOKEN_PLAY + message[1:3]
-		case network.TOKEN_CHOICE_POSITION:
-			s.writeChans[otherClient(clientID)] <- network.TOKEN_CHOICE_POSITION + message[1:]
-			//log.Println("Voici le message", message, "par client", clientID)
-		case network.CLIENT_REMOVE_TOKEN:
-			s.writeChans[otherClient(clientID)] <- network.CLIENT_REMOVE_TOKEN + message[1:]
+		select {
+		case message = <-s.readChans[clientID]:
+			if message[:1] == network.CLIENT_CONNECTED {
+				log.Println("client ", clientID, "connecté")
+			}
+			if message[:1] == network.CLIENT_CHOOSE_TOKEN {
+				log.Println("le client", clientID, "a choisis son personage", message[1])
+				s.writeChans[otherClient(clientID)] <- network.CLIENT_CHOOSE_TOKEN + strconv.Itoa(clientID) + string(message[1])
+			}
+			if message[:1] == network.TOKEN_POSITION {
+				log.Println(message[1:])
+				s.writeChans[otherClient(clientID)] <- network.TOKEN_POSITION + message[1:]
+			}
+			if message[:1] == network.CLIENT_TOKEN_PLAY {
+				s.writeChans[otherClient(clientID)] <- network.CLIENT_TOKEN_PLAY + message[1:3]
+			}
+			if message[:1] == network.TOKEN_CHOICE_POSITION {
+				s.writeChans[otherClient(clientID)] <- network.TOKEN_CHOICE_POSITION + message[1:]
+			}
+			if message[:1] == network.CLIENT_REMOVE_TOKEN {
+				s.writeChans[otherClient(clientID)] <- network.CLIENT_REMOVE_TOKEN + message[1:]
+			}
 		}
 	}
 }
