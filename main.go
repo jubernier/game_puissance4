@@ -41,6 +41,7 @@ func init() {
 func main() {
 	// établissement de la connection client serveur
 	g := InitConn("localhost", "8080")
+	// initialisation de la position pour la sélection
 	g.p1Color = (g.p1Color + g.clientId) % globalNumColorLine
 	//ip := os.Args
 	ebiten.SetWindowTitle("Programmation système : projet puissance 4")

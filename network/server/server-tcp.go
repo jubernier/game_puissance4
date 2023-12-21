@@ -74,8 +74,6 @@ func (s *Server) sendToAll(message string) {
 
 // comClient : Communication avec un client
 func (s *Server) comClient(clientID int) {
-	//s.mutexCountRC.Lock()
-
 	var message string
 	for {
 
@@ -88,7 +86,6 @@ func (s *Server) comClient(clientID int) {
 		case network.CLIENT_CHOOSE_TOKEN:
 			log.Println("le client", clientID, "a choisis son personage", message[1])
 			s.writeChans[otherClient(clientID)] <- network.CLIENT_CHOOSE_TOKEN + strconv.Itoa(clientID) + string(message[1])
-			//log.Println(otherClient(clientID), "huytu", clientID)
 		case network.TOKEN_POSITION:
 			log.Println(message[1:])
 			s.writeChans[otherClient(clientID)] <- network.TOKEN_POSITION + message[1:]
@@ -101,7 +98,6 @@ func (s *Server) comClient(clientID int) {
 			s.writeChans[otherClient(clientID)] <- network.CLIENT_REMOVE_TOKEN + message[1:]
 		}
 	}
-	//defer s.mutexCountRC.Unlock()
 }
 
 func main() {

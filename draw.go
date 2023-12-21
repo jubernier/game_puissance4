@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"image/color"
@@ -106,15 +104,6 @@ func (g Game) resultDraw(screen *ebiten.Image) {
 	}
 	// Ajout de l'affichage pour restart
 	ebiten.SetWindowTitle("Vous voulez rejouer ? (Appuyer sur entrée)")
-	var texte string
-	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		if g.clientInQueue != 2 {
-			texte = "You are ready !\n  Waiting players " + fmt.Sprint(2-g.clientInQueue)
-		} else {
-			texte = "Press SPACE to restart !\n   Waiting players " + fmt.Sprint(2-g.clientInQueue)
-		}
-	}
-	text.Draw(screen, texte, smallFont, 300, 500, globalTextColor)
 	text.Draw(screen, message, smallFont, 300, 400, globalTextColor)
 }
 
