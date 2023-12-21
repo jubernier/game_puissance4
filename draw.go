@@ -104,6 +104,7 @@ func (g Game) resultDraw(screen *ebiten.Image) {
 	} else if g.result == p2wins {
 		message = "Perdu…"
 	}
+	// Ajout de l'affichage pour restart
 	ebiten.SetWindowTitle("Vous voulez rejouer ? (Appuyer sur entrée)")
 	var texte string
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
