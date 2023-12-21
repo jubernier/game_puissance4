@@ -27,8 +27,6 @@ type Game struct {
 	isHost          bool
 	p1Change        int
 	clientInQueue   int
-	// test
-
 }
 
 // Constantes pour représenter la séquence de jeu actuelle (écran titre,

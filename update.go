@@ -124,6 +124,12 @@ func (g *Game) colorSelectUpdate() bool {
 		g.p1Color = line*globalNumColorLine + col
 		// extension n°1 : seulement si le personnage s'est déplacé dans la grille le p1 envoie sa position au p2
 		if g.p1Change != g.p1Color {
+			if g.p1Color == g.p2Color {
+				g.p1Color = (g.p1Color + 1) % globalNumColor
+				moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
+				log.Println("SEND TO SERVER: " + moveMessage)
+				g.writeChan <- moveMessage
+			}
 			moveMessage := network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.p1Color)
 			g.p1Change = g.p1Color
 			g.writeChan <- moveMessage
