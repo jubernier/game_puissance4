@@ -104,7 +104,7 @@ func main() {
 	var server = newServer() // Création du serveur
 	log.Println("Listening for connections")
 	server.acceptClients() // Attend que les 2 clients soient connectés
-	// Le programme ne passe pas à l'étape suivante (ligne suivante) tant que 4 clients ne se sont pas connectés
+
 	server.writeChans[0] <- network.ISHOST
 	server.sendToAll(network.ALL_CONNECTED) // Envoie à tous les clients l'information que tous les clients sont connectés
 	log.Println("All clients connected")
