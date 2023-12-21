@@ -211,17 +211,6 @@ func (g *Game) p2Update() (int, int) {
 	return lastXpos, lastYpos
 }
 
-/*
-func (g *Game) p2Update() (int, int) {
-	position := rand.Intn(globalNumTilesX)
-	updated, yPos := g.updateGrid(p2Token, position)
-	for ; !updated; updated, yPos = g.updateGrid(p2Token, position) {
-		position = (position + 1) % globalNumTilesX
-	}
-	g.turn = p1Turn
-	return position, yPos
-}*/
-
 // Mise à jour de l'état du jeu à l'écran des résultats.
 func (g Game) resultUpdate() bool {
 	return inpututil.IsKeyJustPressed(ebiten.KeyEnter)
