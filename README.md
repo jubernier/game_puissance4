@@ -7,9 +7,19 @@ Groupe : Basma Malki & Justine Bernier
 - `git clone https://github.com/basma-malki/projet-puissance4.gitè
 - Allons dans le dossier racine du projet, puis,
 - ```go build```
+
+
 ### Utilisation de flag
-Exemple :
-- ```./client.exe --port:8080```
+
+Pour exécuter le jeu, il suffit de faire cette commande :
+(Sur Windows)
+- ```.\puissancequatre.exe --port:8080```
+
+(Sur Linux)
+- ```.\puissancequatre --port:8080```
+
+Le jeu utilise Flag pour permettre de changer son adresse IP et/ou son port :
+- ```.\puissancequatre.exe --port:8080```
 
 ### Schéma serveur-clients
 

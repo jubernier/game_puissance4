@@ -79,6 +79,7 @@ func (s *Server) comClient(clientID int) {
 
 		// On lit le message du channel du client
 		// On rappelle que cette fonction est lancée comme go routine et que le serveur lance cette fonction pour chaque client
+		// Ancien switch que nous avons remplacé par un select selon le conseil du professeur
 		select {
 		case message = <-s.readChans[clientID]:
 			if message[:1] == network.CLIENT_CONNECTED {
@@ -101,6 +102,7 @@ func (s *Server) comClient(clientID int) {
 			if message[:1] == network.CLIENT_REMOVE_TOKEN {
 				s.writeChans[otherClient(clientID)] <- network.CLIENT_REMOVE_TOKEN + message[1:]
 			}
+		default:
 		}
 	}
 }
