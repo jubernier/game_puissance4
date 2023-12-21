@@ -80,7 +80,7 @@ func (g *Game) colorSelectUpdate() bool {
 		// extension n°3 : le p2 a déselectionné sont personnage
 		if message[:1] == network.CLIENT_REMOVE_TOKEN {
 			g.p2ChooseToken = false
-			log.Println("le p2 à désectionner son token", g.clientId, message[1:])
+			log.Println("le p2 à déselectionner son token", g.clientId, message[1:])
 		}
 		// le p2 a choisis sont personnage
 		if message[:1] == network.CLIENT_CHOOSE_TOKEN {
