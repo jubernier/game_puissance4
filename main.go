@@ -40,7 +40,7 @@ func init() {
 // Création, paramétrage et lancement du jeu.
 func main() {
 	// établissement de la connection client serveur
-	g := InitGame("localhost", "8080")
+	g := InitConn("localhost", "8080")
 	g.p1Color = (g.p1Color + g.clientId) % globalNumColorLine
 	//ip := os.Args
 	ebiten.SetWindowTitle("Programmation système : projet puissance 4")

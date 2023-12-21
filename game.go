@@ -72,7 +72,7 @@ func (g *Game) reset() {
 }
 
 // assure la connection entre serveur et client
-func InitGame(ip, port string) (g Game) {
+func InitConn(ip, port string) (g Game) {
 	// Open connection
 	log.Println(ip + ":" + port)
 	conn, err := net.Dial("tcp", ip+":"+port)
