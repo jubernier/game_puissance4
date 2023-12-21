@@ -138,8 +138,6 @@ func (g *Game) colorSelectUpdate() bool {
 			return true
 		}
 		return false
-		//g.writeChan <- network.TOKEN_CHOICE_POSITION + strconv.Itoa(g.clientId) + strconv.Itoa(g.p2Color)
-
 	}
 	// extension n°3 : le personnage
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
