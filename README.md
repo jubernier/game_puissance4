@@ -8,7 +8,8 @@ Groupe : Basma Malki & Justine Bernier
 - Allons dans le dossier racine du projet, puis,
 - ```go build```
 ### Utilisation de flag
-- ```go build```
+Exemple :
+- ```./client.exe --port:8080```
 
 ### Schéma serveur-clients
 
