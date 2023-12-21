@@ -42,3 +42,7 @@ select {
 	default:
 	}
 ```
+
+## Extensions & compléments
+
+Les quatres extensions sont implémentées (dans draw.go et update.go) et fonctionnelles dans le puissance quatre et on peut voir l'identifiant de chaque client en haut à gauche sur leur fenêtre de jeu et combien de joueurs sont connectés.
